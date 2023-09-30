@@ -1064,9 +1064,24 @@ function getCarsWithinRange(minPrice, maxPrice) {
 }
 getCarsWithinRange(0, 10000);
 
-/*TO IMPLEMENT LATER
-get cars based on brand
-*/
+
+//get cars based on brand
+function getCarsByBrand(brandName){
+    let arrayOfAllCars = [];
+
+  carMarket.sellers.forEach((seller) => {
+    seller.cars.forEach((carBrand) => {
+        if(carBrand.brand===brandName){
+
+            arrayOfAllCars = arrayOfAllCars.concat(carBrand.models);
+        }
+    });
+  });
+
+  console.log(`All cars ${brandName} available for sale:`, arrayOfAllCars);
+  return arrayOfAllCars;
+}
+getCarsByBrand("bmw");
 
 //returns most expensive car available
 function getMostExpensiveCar() {
