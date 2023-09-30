@@ -628,21 +628,29 @@ const carMarket = {
 
 //Returns agency when given ID, if it doesnt exist it returns undefined
 function getAgencyByID(agencyId) {
-  return carMarket.sellers.find((agency) => {
+  const agency = carMarket.sellers.find((agency) => {
     return agency.agencyId === agencyId;
   });
+
+  console.log(`Successfully found agency by id ${agencyId}`, agency);
+
+  return agency;
 }
 
-console.log('getAgencyByID("Plyq5M5AZ")', getAgencyByID("Plyq5M5AZ"));
+getAgencyByID("Plyq5M5AZ");
 
 //Returns agency when given a name
 function getAgencyByName(agencyName) {
-  return carMarket.sellers.find((agency) => {
+  const agency = carMarket.sellers.find((agency) => {
     return agency.agencyName === agencyName;
   });
+
+  console.log(`Successfully found agency by name ${agencyName}`, agency);
+
+  return agency
 }
 
-console.log('getAgencyByName("CarMax")', getAgencyByName("CarMax"));
+getAgencyByName("CarMax");
 
 //returns an array of all agency names
 function getAllAgencyNames() {
@@ -654,45 +662,56 @@ function getAllAgencyNames() {
 console.log("getAllAgencyNames()", getAllAgencyNames());
 
 //adds new car to an agency.
-function addNewCarToAgency(agencyId, brandName, carName, carYear, carPrice, carNumber) {
+function addNewCarToAgency(
+  agencyId,
+  brandName,
+  carName,
+  carYear,
+  carPrice,
+  carNumber
+) {
   const agency = getAgencyByID(agencyId);
 
   //checks if agency exists
-  if(agency){
+  if (agency) {
+    if (carName && carYear && carPrice && carNumber) {
+      //creates a car object using the given values
+      const carObj = {
+        name: carName.toString(),
+        year: parseInt(carYear),
+        price: parseFloat(carPrice),
+        carNumber: carNumber.toString(),
+        ownerId: agencyId,
+      };
 
-    if(carName && carYear && carPrice && carNumber){
-        //creates a car object using the given values
-        const carObj = {
-          name: carName.toString(),
-          year: parseInt(carYear),
-          price: parseFloat(carPrice),
-          carNumber: carNumber.toString(),
-          ownerId: agencyId,
-        }
-      
-        //searches if the car brand exists inside the cars array of the agency and saves it in carBrand
-        const carBrand = agency.cars.find((car) => {
-          return car.brand.toLowerCase() === brandName.toLowerCase();
+      //searches if the car brand exists inside the cars array of the agency and saves it in carBrand
+      const carBrand = agency.cars.find((car) => {
+        return car.brand.toLowerCase() === brandName.toLowerCase();
+      });
+
+      //if the carBrand exists, it pushes the new car object inside the models array
+      if (carBrand != undefined) {
+        carBrand.models.push(carObj);
+      } else {
+        //else: it creates a new brand model inside cars[] and saves the new carObj inside a models array
+        agency.cars.push({
+          brand: brandName,
+          models: [carObj],
         });
-      
-        //if the carBrand exists, it pushes the new car object inside the models array
-        if (carBrand != undefined) {
-          carBrand.models.push(carObj);
-        } else { //else: it creates a new brand model inside cars[] and saves the new carObj inside a models array 
-          agency.cars.push({
-            brand: brandName,
-            models: [carObj],
-          });
-        }
-        console.log(`Car with num:${carObj.name} added successfully to agency#${agencyId} `);
+      }
+      console.log(
+        `Car with num:${carObj.name} added successfully to agency#${agencyId} `
+      );
     } else {
-        console.log(`Error: failed to create car because one or more values were passed incorrectly`)
+      console.log(
+        `Error: failed to create car because one or more values were passed incorrectly`
+      );
     }
   } else {
-    console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`)
+    console.log(
+      `Error: the provided agency id (${agencyId}) does not exist in the database`
+    );
   }
-
-
 }
 
 addNewCarToAgency("Plsyq5M5AZ", "Rolls-Royce", "Ghost", 2023, 398500, "837SG");
@@ -701,250 +720,280 @@ addNewCarToAgency("Plyq5M5AZ", "Rolls-Royce", "Phantom", 2022, 457750, "837SG");
 addNewCarToAgency("Plyq5M5AZ", "Tesla", "Model S", 2023, 71090, "MU5K23");
 addNewCarToAgency("Plyq5M5AZ", "bM2w");
 
-
 //Removes car from agency if car exists
-function removeCarFromAgency(agencyId, carNumber){
-    const agency = getAgencyByID(agencyId);
+function removeCarFromAgency(agencyId, carNumber) {
+  const agency = getAgencyByID(agencyId);
 
-    //checks if agency actually exists
-    if(agency){
-        let car = undefined;
-        //looks inside each carbrand object for a car model with number === carNumber
-        agency.cars.find(carBrand => {
-            //looks for the car itself inside the models array
-            car = carBrand.models.find(model => {
-                return model.carNumber === carNumber
-            })
-            //if the car exists it removes it from the models array using splice
-            if(car){
-                carBrand.models.splice(carBrand.models.indexOf(car),1);
-                //if the models array for that brand is now empty it removes this brand object from the agency's cars array
-                if(carBrand.models.length === 0){
-                    agency.cars.splice(agency.cars.indexOf(carBrand), 1);
-                }
-                console.log(`car with num:${carNumber} has been successfully removed from agency#${agencyId}`)
-                return true; //this return true is used here to stop the .find() method from running once it has found the car
-            } 
-        })
-        if(!car) {
-            console.log(`No car exists with numer:${carNumber}`);
+  //checks if agency actually exists
+  if (agency) {
+    let car = undefined;
+    //looks inside each carbrand object for a car model with number === carNumber
+    agency.cars.find((carBrand) => {
+      //looks for the car itself inside the models array
+      car = carBrand.models.find((model) => {
+        return model.carNumber === carNumber;
+      });
+      //if the car exists it removes it from the models array using splice
+      if (car) {
+        carBrand.models.splice(carBrand.models.indexOf(car), 1);
+        //if the models array for that brand is now empty it removes this brand object from the agency's cars array
+        if (carBrand.models.length === 0) {
+          agency.cars.splice(agency.cars.indexOf(carBrand), 1);
         }
-    } else {
-        console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
+        console.log(
+          `car with num:${carNumber} has been successfully removed from agency#${agencyId}`
+        );
+        return true; //this return true is used here to stop the .find() method from running once it has found the car
+      }
+    });
+    if (!car) {
+      console.log(`No car exists with numer:${carNumber}`);
     }
+  } else {
+    console.log(
+      `Error: the provided agency id (${agencyId}) does not exist in the database`
+    );
+  }
 }
 
 removeCarFromAgency("Plyq5M5AZ", "837SG");
 
 //changes the cash of an agency
-function changeAgencyCash(agencyId, cashAmount){
-    const agency = getAgencyByID(agencyId);
+function changeAgencyCash(agencyId, cashAmount) {
+  const agency = getAgencyByID(agencyId);
 
-    cashAmount = parseFloat(cashAmount)
+  cashAmount = parseFloat(cashAmount);
 
-    if(agency){
-        if(isNaN(cashAmount)){
-            console.log(`${cashAmount} is not a number`);
-        } else {
-            agency.cash = cashAmount;
-            console.log(`Cash successfully changed to ${cashAmount} for agency with id:${agencyId}`);
-        }
+  if (agency) {
+    if (isNaN(cashAmount)) {
+      console.log(`${cashAmount} is not a number`);
     } else {
-        console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
+      agency.cash = cashAmount;
+      console.log(
+        `Cash successfully changed to ${cashAmount} for agency with id:${agencyId}`
+      );
     }
+  } else {
+    console.log(
+      `Error: the provided agency id (${agencyId}) does not exist in the database`
+    );
+  }
 }
+changeAgencyCash("Plyq5M5AZ", 300000);
 
 //changes the credit of an agency
-function changeAgencyCredit(agencyId, creditAmount){
-    const agency = getAgencyByID(agencyId);
+function changeAgencyCredit(agencyId, creditAmount) {
+  const agency = getAgencyByID(agencyId);
 
-    creditAmount = parseFloat(creditAmount)
+  creditAmount = parseFloat(creditAmount);
 
-    if(agency){
-        if(isNaN(creditAmount)){
-            console.log(`${creditAmount} is not a number`);
-        } else {
-            agency.credit = creditAmount;
-            console.log(`credit successfully changed to ${creditAmount} for agency with id:${agencyId}`);
-        }
+  if (agency) {
+    if (isNaN(creditAmount)) {
+      console.log(`${creditAmount} is not a number`);
     } else {
-        console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
+      agency.credit = creditAmount;
+      console.log(
+        `credit successfully changed to ${creditAmount} for agency with id:${agencyId}`
+      );
     }
+  } else {
+    console.log(
+      `Error: the provided agency id (${agencyId}) does not exist in the database`
+    );
+  }
 }
+changeAgencyCash("Plyq5M5AZ", 240000);
 
 //updates the price of a specific car in an agency
-function updateCarPrice(agencyId, carNumber, newPrice){
-    const agency = getAgencyByID(agencyId);
+function updateCarPrice(agencyId, carNumber, newPrice) {
+  const agency = getAgencyByID(agencyId);
 
-    newPrice = parseFloat(newPrice);
+  newPrice = parseFloat(newPrice);
 
-    if(agency){
-        if(!isNaN(newPrice)){
-            agency.cars.find(carBrand => {
-                let carModel = carBrand.models.find(model => {
-                    return model.carNumber === carNumber;
-                })
-    
-                if(carModel){
-                    carModel.price = newPrice;
-                    console.log(`Car price successfully changed to ${carModel.price} for car with num=${carModel.carNumber}`);
-                    return true;
-                } 
-            })
-        } else {
-            console.log(`Error: newPrice must be a number`);
+  if (agency) {
+    if (!isNaN(newPrice)) {
+      agency.cars.find((carBrand) => {
+        let carModel = carBrand.models.find((model) => {
+          return model.carNumber === carNumber;
+        });
+
+        if (carModel) {
+          carModel.price = newPrice;
+          console.log(
+            `Car price successfully changed to ${carModel.price} for car with num=${carModel.carNumber}`
+          );
+          return true;
         }
+      });
     } else {
-        console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
+      console.log(`Error: newPrice must be a number`);
     }
+  } else {
+    console.log(
+      `Error: the provided agency id (${agencyId}) does not exist in the database`
+    );
+  }
 }
+updateCarPrice("Plyq5M5AZ", "AZJZ4", 127000);
 
 // calculates the total market revenue of the agency (sum of all car prices)
-function getTotalMarketRevenue(agencyId){
-    const agency = getAgencyByID(agencyId);
+function getTotalAgencyRevenue(agencyId) {
+  const agency = getAgencyByID(agencyId);
 
-    if(agency){
+  if (agency) {
+    let totalRevenue = 0;
 
-        let totalRevenue = 0;
-
-        //loops over each car inside agency.cars
-        for (const car of agency.cars) {
-            //loops over model inside car.models array
-            for(const model of car.models){
-                //adds the model's price to the total revenue
-                totalRevenue += model.price;
-            }
-        }
-
-        console.log(`Total Revenue for Agency#${agencyId} = ${totalRevenue}`)
-        return totalRevenue;
-
-    } else {
-        console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
-        return undefined;
+    //loops over each car inside agency.cars
+    for (const car of agency.cars) {
+      //loops over model inside car.models array
+      for (const model of car.models) {
+        //adds the model's price to the total revenue
+        totalRevenue += model.price;
+      }
     }
+
+    console.log(`Total Revenue for Agency#${agencyId} = ${totalRevenue}`);
+    return totalRevenue;
+  } else {
+    console.log(
+      `Error: the provided agency id (${agencyId}) does not exist in the database`
+    );
+    return undefined;
+  }
 }
 
-getTotalMarketRevenue("Plyq5M5AZ");
+getTotalAgencyRevenue("Plyq5M5AZ");
 
-// transfers a car from one agency to another 
-function transferCarBetweenAgencies(oldAgencyId, newAgencyId, carNumber){
-    const oldAgency = getAgencyByID(oldAgencyId);
-    const newAgency = getAgencyByID(newAgencyId);
+// transfers a car from one agency to another
+function transferCarBetweenAgencies(oldAgencyId, newAgencyId, carNumber) {
+  const oldAgency = getAgencyByID(oldAgencyId);
+  const newAgency = getAgencyByID(newAgencyId);
 
-    if(newAgency && oldAgency){
-        let carObj;
-        let carBrand;
+  if (newAgency && oldAgency) {
+    let carObj;
+    let carBrand;
 
-        for (car of oldAgency.cars){
-            for(model of car.models){
-                if(carNumber === model.carNumber){
-                    carObj = model;
-                    carBrand = car.brand;
-                    console.log(carObj, carBrand)
-                }
-            }
+    for (car of oldAgency.cars) {
+      for (model of car.models) {
+        if (carNumber === model.carNumber) {
+          carObj = model;
+          carBrand = car.brand;
+          console.log(carObj, carBrand);
         }
-
-        if(carBrand && carObj){
-            removeCarFromAgency(oldAgencyId, carNumber);
-            addNewCarToAgency(newAgencyId, carBrand, carObj.name, carObj.year, carObj.price, carObj.carNumber);
-            console.log(`Car ${carNumber} has successfully been transfered from agency#${oldAgencyId} to agency#${newAgencyId}`);
-        } else {
-            console.log(`Transfer Failed: car#${carNumber} does not exist in agency#${oldAgencyId}'s database`);
-        }
-
-    } else {
-        console.log(`Transfer Failed`);
+      }
     }
+
+    if (carBrand && carObj) {
+      removeCarFromAgency(oldAgencyId, carNumber);
+      addNewCarToAgency(
+        newAgencyId,
+        carBrand,
+        carObj.name,
+        carObj.year,
+        carObj.price,
+        carObj.carNumber
+      );
+      console.log(
+        `Car ${carNumber} has successfully been transfered from agency#${oldAgencyId} to agency#${newAgencyId}`
+      );
+    } else {
+      console.log(
+        `Transfer Failed: car#${carNumber} does not exist in agency#${oldAgencyId}'s database`
+      );
+    }
+  } else {
+    console.log(`Transfer Failed`);
+  }
 }
-transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1","MU5K23");
-transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1","MU5K2");
+transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1", "MU5K23");
+transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1", "MU5K2");
 
 //*** CUSTOMER OPPERATIONS***//
 
 //returns customer as an object, takes customer name as an argument
-function getCustomerByName(customerName){
-    const customerObj = carMarket.customers.find(customer => {
-        return customer.name === customerName;
-    });
+function getCustomerByName(customerName) {
+  const customerObj = carMarket.customers.find((customer) => {
+    return customer.name === customerName;
+  });
 
-    if(customerObj){
-        console.log(`Successfully found customer using name ${customerName}`, customerObj);
-    } else {
-        console.log(`Failed to find customer named ${customerName}`);
-    }
+  if (customerObj) {
+    console.log(
+      `Successfully found customer using name ${customerName}`,
+      customerObj
+    );
+  } else {
+    console.log(`Failed to find customer named ${customerName}`);
+  }
 
-    return customerObj;
+  return customerObj;
 }
 getCustomerByName("Bob Steel");
 getCustomerByName("Simon Asmar");
 
 //returns customer using customerID
-function getCustomerByID(customerId){
-    const customerObj = carMarket.customers.find(customer => {
-        return customer.id === customerId;
-    });
+function getCustomerByID(customerId) {
+  const customerObj = carMarket.customers.find((customer) => {
+    return customer.id === customerId;
+  });
 
-    if(customerObj){
-        console.log(`Successfully found customer using id ${customerId}`, customerObj);
-    } else {
-        console.log(`Failed to find customer with id ${customerId}`);
-    }
+  if (customerObj) {
+    console.log(
+      `Successfully found customer using id ${customerId}`,
+      customerObj
+    );
+  } else {
+    console.log(`Failed to find customer with id ${customerId}`);
+  }
 
-    return customerObj;
+  return customerObj;
 }
 getCustomerByID("Wm6BkA1F0");
 getCustomerByID("Wm6BkA1");
 
 //returns all customer names
-function getAllCustomerNames(){
-    const customerNames = carMarket.customers.map(customer => {
-        return customer.name;
-    })
+function getAllCustomerNames() {
+  const customerNames = carMarket.customers.map((customer) => {
+    return customer.name;
+  });
 
-    console.log("Customer Names", customerNames);
+  console.log("Customer Names", customerNames);
 
-    return customerNames;
+  return customerNames;
 }
 getAllCustomerNames();
 
 //changes the amount of cash a customer has
-function updateCustomerCash(customerId, newCashAmount){
-    const customer = getCustomerByID(customerId);
+function updateCustomerCash(customerId, newCashAmount) {
+  const customer = getCustomerByID(customerId);
 
-    newCashAmount = parseFloat(newCashAmount);
+  newCashAmount = parseFloat(newCashAmount);
 
-    if(customer && (!isNaN(newCashAmount))){
+  if (customer && !isNaN(newCashAmount)) {
+    customer.cash = newCashAmount;
 
-        customer.cash = newCashAmount;
-
-        console.log(`Successfully updated cash abount for customer`, customer);
-
-    } else {
-        console.log(`Failed to update customer cash`);
-    }
+    console.log(`Successfully updated cash abount for customer`, customer);
+  } else {
+    console.log(`Failed to update customer cash`);
+  }
 }
 updateCustomerCash("2RprZ1dbL", 27000);
 
 //calculates totaal value of all cars owned by customer
-function getCustomerTotalCarValue(customerId){
-    const customer = getCustomerByID(customerId);
+function getCustomerTotalCarValue(customerId) {
+  const customer = getCustomerByID(customerId);
 
-    if(customer){
-        
-        const initialValue = 0;
-        let totalCarValue = customer.cars.reduce((acc, currentValue) => {
-            return acc + currentValue.price;
-        }, initialValue);
+  if (customer) {
+    const initialValue = 0;
+    let totalCarValue = customer.cars.reduce((acc, currentValue) => {
+      return acc + currentValue.price;
+    }, initialValue);
 
-        console.log(`${customer.name}\'s total car value = $${totalCarValue}`)        
+    console.log(`${customer.name}\'s total car value = $${totalCarValue}`);
 
-        return totalCarValue;
-    } else {
-        console.log(`Failed to get total car value`);
-    }
-
+    return totalCarValue;
+  } else {
+    console.log(`Failed to get total car value`);
+  }
 }
 getCustomerTotalCarValue("2RprZ1dbL");
 getCustomerTotalCarValue("Wm6BkA1F0");
@@ -952,60 +1001,66 @@ getCustomerTotalCarValue("Wm6BkA1F0");
 //***CAR OPERATIONS***/
 
 //returns an array of all car models available for purchase
-function getAllAvailableCars(){
-    let arrayOfAllCars = [];
+function getAllAvailableCars() {
+  let arrayOfAllCars = [];
 
-    carMarket.sellers.forEach(seller => {
-        seller.cars.forEach(carBrand => {
-            arrayOfAllCars = arrayOfAllCars.concat(carBrand.models);
-        });
+  carMarket.sellers.forEach((seller) => {
+    seller.cars.forEach((carBrand) => {
+      arrayOfAllCars = arrayOfAllCars.concat(carBrand.models);
     });
+  });
 
-    console.log("All cars available for sale:", arrayOfAllCars);
-    return arrayOfAllCars;
+  console.log("All cars available for sale:", arrayOfAllCars);
+  return arrayOfAllCars;
 }
 getAllAvailableCars();
 
 //returns an array of cars made in specific year
-function getAvailableCarsByYear(year){
-    year = parseInt(year);
+function getAvailableCarsByYear(year) {
+  year = parseInt(year);
 
-    const arrayOfCars = getAllAvailableCars().filter(car => {
-        return car.year === year;
-    })
+  const arrayOfCars = getAllAvailableCars().filter((car) => {
+    return car.year === year;
+  });
 
-    if(arrayOfCars.length > 0){
-        console.log(`Found ${arrayOfCars.length} cars made in year ${year}`, arrayOfCars);
-    } else {
-        console.log(`Couldn\'t find any cars made in year ${year}`);
-    }
-    return arrayOfCars;
+  if (arrayOfCars.length > 0) {
+    console.log(
+      `Found ${arrayOfCars.length} cars made in year ${year}`,
+      arrayOfCars
+    );
+  } else {
+    console.log(`Couldn\'t find any cars made in year ${year}`);
+  }
+  return arrayOfCars;
 }
 getAvailableCarsByYear(2005);
 getAvailableCarsByYear(2066);
 
 //returns an array of available cars that are within a price range
-function getCarsWithinRange(minPrice, maxPrice){
-    minPrice = parseFloat(minPrice);
-    maxPrice = parseFloat(maxPrice);
+function getCarsWithinRange(minPrice, maxPrice) {
+  minPrice = parseFloat(minPrice);
+  maxPrice = parseFloat(maxPrice);
 
-    if(isNaN(minPrice) || isNaN(maxPrice)){
-        console.log(`please enter a number for min and max price values`);
+  if (isNaN(minPrice) || isNaN(maxPrice)) {
+    console.log(`please enter a number for min and max price values`);
+  } else {
+    const arrayOfCars = getAllAvailableCars().filter((car) => {
+      if (car.price >= minPrice && car.price <= maxPrice) {
+        return true;
+      }
+    });
+
+    if (arrayOfCars.length > 0) {
+      console.log(
+        `found ${arrayOfCars.length} cars within price range (${minPrice}, ${maxPrice})`,
+        arrayOfCars
+      );
     } else {
-        const arrayOfCars = getAllAvailableCars().filter(car => {
-            if(car.price >= minPrice && car.price <= maxPrice){
-                return true;
-            }
-        });
-
-        if(arrayOfCars.length>0){
-            console.log(`found ${arrayOfCars.length} cars within price range (${minPrice}, ${maxPrice})`, arrayOfCars);
-        } else {
-            console.log(`No cars available within given range`);
-        }
-
-        return arrayOfCars;
+      console.log(`No cars available within given range`);
     }
+
+    return arrayOfCars;
+  }
 }
 getCarsWithinRange(0, 10000);
 
@@ -1014,97 +1069,130 @@ get cars based on brand
 */
 
 //returns most expensive car available
-function getMostExpensiveCar(){
-    const mostExpensiveCar = getAllAvailableCars().reduce((acc, currentValue) => {
-        if(acc.price > currentValue.price){
-            return acc;
-        } else {
-            return currentValue;
-        }
-    }, 0);
+function getMostExpensiveCar() {
+  const mostExpensiveCar = getAllAvailableCars().reduce((acc, currentValue) => {
+    if (acc.price > currentValue.price) {
+      return acc;
+    } else {
+      return currentValue;
+    }
+  }, 0);
 
-    console.log(`The most expensive car available costs $${mostExpensiveCar.price}`, mostExpensiveCar);
-    return mostExpensiveCar;
+  console.log(
+    `The most expensive car available costs $${mostExpensiveCar.price}`,
+    mostExpensiveCar
+  );
+  return mostExpensiveCar;
 }
 getMostExpensiveCar();
 
 // returns cheapest car available
-function getCheapestCar(){
-    const cheapestCar = getAllAvailableCars().reduce((acc, currentValue) => {
-        if(acc.price < currentValue.price){
-            return acc;
-        } else {
-            return currentValue;
-        }
-    }, 0);
+function getCheapestCar() {
+  const cheapestCar = getAllAvailableCars().reduce((acc, currentValue) => {
+    if (acc.price < currentValue.price) {
+      return acc;
+    } else {
+      return currentValue;
+    }
+  }, 0);
 
-    console.log(`The cheapest available car costs $${cheapestCar.price}`, cheapestCar);
-    return cheapestCar;
+  console.log(
+    `The cheapest available car costs $${cheapestCar.price}`,
+    cheapestCar
+  );
+  return cheapestCar;
 }
 getCheapestCar();
 
 //searches for a car with a specific number
-function getAvailableCarByNumber(carNumber){
-    const carObj = getAllAvailableCars().find(car => {
-        return car.carNumber === carNumber
-    });
+function getAvailableCarByNumber(carNumber) {
+  const carObj = getAllAvailableCars().find((car) => {
+    return car.carNumber === carNumber;
+  });
 
-    if(carObj){
-        console.log(`Successfully found car with license plate number = ${carObj.carNumber}`, carObj);
-        return carObj;
-    } else {
-        console.log(`Failed to find a car with license plate number ${carNumber}`);
-    }
+  if (carObj) {
+    console.log(
+      `Successfully found car with license plate number = ${carObj.carNumber}`,
+      carObj
+    );
+    return carObj;
+  } else {
+    console.log(`Failed to find a car with license plate number ${carNumber}`);
+  }
 }
 
 //***CAR PURCHASE OPERATIONS***//
-function sellCar(carNumber, customerId){
-    const car = getAvailableCarByNumber(carNumber);
-    const customer = getCustomerByID(customerId);
+function sellCar(carNumber, customerId) {
+  const car = getAvailableCarByNumber(carNumber);
+  const customer = getCustomerByID(customerId);
 
-    if(car && customer){
-        const agency = getAgencyByID(car.ownerId);
+  if (car && customer) {
+    const agency = getAgencyByID(car.ownerId);
 
-        if(agency){
+    if (agency) {
 
-            //i wrote it this way because i think if customer doesn't have enough cash they can buy on credit (loan from the company if the company has enough credit)?
-            if(customer.cash>=(car.price - agency.credit)){
+      //i wrote it this way because i think if customer doesn't have enough cash they can buy on credit (loan from the company if the company has enough credit)?
+      if (customer.cash >= car.price - agency.credit) {
+        const taxPrice = parseFloat((car.price * 0.17).toFixed(2));
 
-                //purchasable without credit
-                if(customer.cash>=car.price){
-                    changeAgencyCash(agency.agencyId, (agency.cash + car.price));
-                    updateCustomerCash(customer.id, (customer.cash - car.price));
-
-                } else { //needs credit (NOT SURE IF THIS IS HOW IT SHOULD BE IMPLEMENTED)
-                    changeAgencyCash(agency.agencyId, (agency.cash + customer.cash));
-                    updateCustomerCash(customer.id, (customer.cash - car.price));
-                    //since customer cash is in the negatives we add it to company credit
-                    changeAgencyCredit(agency.agencyId, (agency.credit + customer.cash));
-                }
-
-                removeCarFromAgency(agency.agencyId, car.carNumber);
-                customer.cars.push(car);
-            
-                console.log(`${customer.name} successfully bought car with num ${car.carNumber} for $${car.price}. ${customer.name}\'s cash balance = ${customer.cash}. Agency cash=${agency.cash},credit=${agency.credit}`);
-
-                //CALC TAX
-
-            } else {
-                console.log(`Failed to sell car: customer cannot affor car! car price: ${car.price}, customer cash: ${customer.cash}, agency credit: ${agency.credit}`)
-            }
-
+        //purchasable without credit
+        if (customer.cash >= car.price) {
+          changeAgencyCash(agency.agencyId, (agency.cash + car.price - taxPrice));
+          updateCustomerCash(customer.id, customer.cash - car.price);
         } else {
-            console.log(`Failed to sell car: couldn't find agency`);
+          //needs credit (NOT SURE IF THIS IS HOW IT SHOULD BE IMPLEMENTED)
+          changeAgencyCash(agency.agencyId, (agency.cash + customer.cash - taxPrice));
+          updateCustomerCash(customer.id, customer.cash - car.price);
+          //since customer cash is in the negatives we add it to company credit
+          changeAgencyCredit(agency.agencyId, agency.credit + customer.cash);
         }
 
+        removeCarFromAgency(agency.agencyId, car.carNumber);
+        customer.cars.push(car);
+
+        console.log(
+          `${customer.name} successfully bought car with num ${car.carNumber} for $${car.price}. ${customer.name}\'s cash balance = ${customer.cash}. Agency cash=${agency.cash},credit=${agency.credit}`
+        );
+
+        //update TAX Authority records
+        carMarket.taxesAuthority.numberOfTransactions++;
+        carMarket.taxesAuthority.sumOfAllTransactions+=car.price;
+        carMarket.taxesAuthority.totalTaxesPaid = (parseFloat(carMarket.taxesAuthority.totalTaxesPaid) + taxPrice).toString();
+        
+      } else {
+        console.log(
+          `Failed to sell car: customer cannot affor car! car price: ${car.price}, customer cash: ${customer.cash}, agency credit: ${agency.credit}`
+        );
+      }
     } else {
-        if(!car){
-            console.log(`Failed to sell car: couldn't find available car with number (${carNumber})`);
-        } else if(!customer){
-            console.log(`Failed to sell car: couldn't find customer with id (${customerId})`);
-        }
-    } 
+      console.log(`Failed to sell car: couldn't find agency`);
+    }
+  } else {
+    if (!car) {
+      console.log(
+        `Failed to sell car: couldn't find available car with number (${carNumber})`
+      );
+    } else if (!customer) {
+      console.log(
+        `Failed to sell car: couldn't find customer with id (${customerId})`
+      );
+    }
+  }
 }
-sellCar("S6DL1", "Wm6BkA1F0");
-// sellCar("QwBOT", "Wm6BkA1F0");
-sellCar("KqKV_", "Wm6BkA1F0");
+// sellCar("S6DL1", "Wm6BkA1F0");
+sellCar("QwBOT", "Wm6BkA1F0");
+// sellCar("KqKV_", "Wm6BkA1F0");
+
+console.log(carMarket.taxesAuthority);
+
+//Returns total market revenue (not sure if it should be the combined total revinue of all agencies or if it should also include customers cash)
+function getTotalMarketReveue(){
+    const totalMarketRevenue = carMarket.sellers.reduce((acc, currentSeller) => {
+        return acc + getTotalAgencyRevenue(currentSeller.agencyId);
+    }, 0)
+
+    console.log(`Total Market Revenue = $${totalMarketRevenue}`);
+
+    return totalMarketRevenue;
+}
+getTotalMarketReveue();
