@@ -684,7 +684,7 @@ function addNewCarToAgency(agencyId, brandName, carName, carYear, carPrice, carN
             models: [carObj],
           });
         }
-        console.log(`Car added successfully: ${carObj.name}`);
+        console.log(`Car with num:${carObj.name} added successfully to agency#${agencyId} `);
     } else {
         console.log(`Error: failed to create car because one or more values were passed incorrectly`)
     }
@@ -701,7 +701,7 @@ addNewCarToAgency("Plyq5M5AZ", "Rolls-Royce", "Phantom", 2022, 457750, "837SG");
 addNewCarToAgency("Plyq5M5AZ", "Tesla", "Model S", 2023, 71090, "MU5K23");
 addNewCarToAgency("Plyq5M5AZ", "bM2w");
 
-//returns car object using car num //THIS ONLY WORKS FOR SELLERS
+//returns car object using car num
 // function getCarByNumber(carNumber){
 //     carNumber = carNumber.toString();
      
@@ -713,9 +713,7 @@ addNewCarToAgency("Plyq5M5AZ", "bM2w");
 //         })
 //     })
 // }
-// getCarByNumber("MU5K23")
-// console.log('getCarByNumber("MU5K23")', getCarByNumber("MU5K23"))
-// console.log('getCarByNumber("simon")', getCarByNumber("simon"))
+
 
 //Removes car from agency if car exists
 function removeCarFromAgency(agencyId, carNumber){
@@ -723,10 +721,11 @@ function removeCarFromAgency(agencyId, carNumber){
 
     //checks if agency actually exists
     if(agency){
+        let car = undefined;
         //looks inside each carbrand object for a car model with number === carNumber
         agency.cars.find(carBrand => {
             //looks for the car itself inside the models array
-            let car = carBrand.models.find(model => {
+            car = carBrand.models.find(model => {
                 return model.carNumber === carNumber
             })
             //if the car exists it removes it from the models array using splice
@@ -736,12 +735,13 @@ function removeCarFromAgency(agencyId, carNumber){
                 if(carBrand.models.length === 0){
                     agency.cars.splice(agency.cars.indexOf(carBrand), 1);
                 }
-                console.log(`car with num:${carNumber} has been deleted successfully`)
+                console.log(`car with num:${carNumber} has been successfully removed from agency#${agencyId}`)
                 return true; //this return true is used here to stop the .find() method from running once it has found the car
-            } else {
-                console.log(`No car exists with numer:${carNumber}`);
-            }
+            } 
         })
+        if(!car) {
+            console.log(`No car exists with numer:${carNumber}`);
+        }
     } else {
         console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
     }
@@ -805,7 +805,7 @@ function updateCarPrice(agencyId, carNumber, newPrice){
                 } 
             })
         } else {
-            console.log(`Error: newPrice is must be a number`);
+            console.log(`Error: newPrice must be a number`);
         }
     } else {
         console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
@@ -837,3 +837,36 @@ function getTotalMarketRevenue(agencyId){
 }
 
 getTotalMarketRevenue("Plyq5M5AZ");
+
+function transferCarBetweenAgencies(oldAgencyId, newAgencyId, carNumber){
+    const oldAgency = getAgencyByID(oldAgencyId);
+    const newAgency = getAgencyByID(newAgencyId);
+
+    if(newAgency && oldAgency){
+        let carObj;
+        let carBrand;
+
+        for (car of oldAgency.cars){
+            for(model of car.models){
+                if(carNumber === model.carNumber){
+                    carObj = model;
+                    carBrand = car.brand;
+                    console.log(carObj, carBrand)
+                }
+            }
+        }
+
+        if(carBrand && carObj){
+            removeCarFromAgency(oldAgencyId, carNumber);
+            addNewCarToAgency(newAgencyId, carBrand, carObj.name, carObj.year, carObj.price, carObj.carNumber);
+            console.log(`Car ${carNumber} has successfully been transfered from agency#${oldAgencyId} to agency#${newAgencyId}`);
+        } else {
+            console.log(`Transfer Failed: car#${carNumber} does not exist in agency#${oldAgencyId}'s database`);
+        }
+
+    } else {
+        console.log(`Transfer Failed`);
+    }
+}
+transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1","MU5K23");
+transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1","MU5K2");
