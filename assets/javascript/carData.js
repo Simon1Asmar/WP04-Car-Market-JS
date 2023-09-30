@@ -1042,3 +1042,69 @@ function getCheapestCar(){
     return cheapestCar;
 }
 getCheapestCar();
+
+//searches for a car with a specific number
+function getAvailableCarByNumber(carNumber){
+    const carObj = getAllAvailableCars().find(car => {
+        return car.carNumber === carNumber
+    });
+
+    if(carObj){
+        console.log(`Successfully found car with license plate number = ${carObj.carNumber}`, carObj);
+        return carObj;
+    } else {
+        console.log(`Failed to find a car with license plate number ${carNumber}`);
+    }
+}
+
+//***CAR PURCHASE OPERATIONS***//
+function sellCar(carNumber, customerId){
+    const car = getAvailableCarByNumber(carNumber);
+    const customer = getCustomerByID(customerId);
+
+    if(car && customer){
+        const agency = getAgencyByID(car.ownerId);
+
+        if(agency){
+
+            //i wrote it this way because i think if customer doesn't have enough cash they can buy on credit (loan from the company if the company has enough credit)?
+            if(customer.cash>=(car.price - agency.credit)){
+
+                //purchasable without credit
+                if(customer.cash>=car.price){
+                    changeAgencyCash(agency.agencyId, (agency.cash + car.price));
+                    updateCustomerCash(customer.id, (customer.cash - car.price));
+
+                } else { //needs credit (NOT SURE IF THIS IS HOW IT SHOULD BE IMPLEMENTED)
+                    changeAgencyCash(agency.agencyId, (agency.cash + customer.cash));
+                    updateCustomerCash(customer.id, (customer.cash - car.price));
+                    //since customer cash is in the negatives we add it to company credit
+                    changeAgencyCredit(agency.agencyId, (agency.credit + customer.cash));
+                }
+
+                removeCarFromAgency(agency.agencyId, car.carNumber);
+                customer.cars.push(car);
+            
+                console.log(`${customer.name} successfully bought car with num ${car.carNumber} for $${car.price}. ${customer.name}\'s cash balance = ${customer.cash}. Agency cash=${agency.cash},credit=${agency.credit}`);
+
+                //CALC TAX
+
+            } else {
+                console.log(`Failed to sell car: customer cannot affor car! car price: ${car.price}, customer cash: ${customer.cash}, agency credit: ${agency.credit}`)
+            }
+
+        } else {
+            console.log(`Failed to sell car: couldn't find agency`);
+        }
+
+    } else {
+        if(!car){
+            console.log(`Failed to sell car: couldn't find available car with number (${carNumber})`);
+        } else if(!customer){
+            console.log(`Failed to sell car: couldn't find customer with id (${customerId})`);
+        }
+    } 
+}
+sellCar("S6DL1", "Wm6BkA1F0");
+// sellCar("QwBOT", "Wm6BkA1F0");
+sellCar("KqKV_", "Wm6BkA1F0");
