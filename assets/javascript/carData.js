@@ -949,3 +949,96 @@ function getCustomerTotalCarValue(customerId){
 getCustomerTotalCarValue("2RprZ1dbL");
 getCustomerTotalCarValue("Wm6BkA1F0");
 
+//***CAR OPERATIONS***/
+
+//returns an array of all car models available for purchase
+function getAllAvailableCars(){
+    let arrayOfAllCars = [];
+
+    carMarket.sellers.forEach(seller => {
+        seller.cars.forEach(carBrand => {
+            arrayOfAllCars = arrayOfAllCars.concat(carBrand.models);
+        });
+    });
+
+    console.log("All cars available for sale:", arrayOfAllCars);
+    return arrayOfAllCars;
+}
+getAllAvailableCars();
+
+//returns an array of cars made in specific year
+function getAvailableCarsByYear(year){
+    year = parseInt(year);
+
+    const arrayOfCars = getAllAvailableCars().filter(car => {
+        return car.year === year;
+    })
+
+    if(arrayOfCars.length > 0){
+        console.log(`Found ${arrayOfCars.length} cars made in year ${year}`, arrayOfCars);
+    } else {
+        console.log(`Couldn\'t find any cars made in year ${year}`);
+    }
+    return arrayOfCars;
+}
+getAvailableCarsByYear(2005);
+getAvailableCarsByYear(2066);
+
+//returns an array of available cars that are within a price range
+function getCarsWithinRange(minPrice, maxPrice){
+    minPrice = parseFloat(minPrice);
+    maxPrice = parseFloat(maxPrice);
+
+    if(isNaN(minPrice) || isNaN(maxPrice)){
+        console.log(`please enter a number for min and max price values`);
+    } else {
+        const arrayOfCars = getAllAvailableCars().filter(car => {
+            if(car.price >= minPrice && car.price <= maxPrice){
+                return true;
+            }
+        });
+
+        if(arrayOfCars.length>0){
+            console.log(`found ${arrayOfCars.length} cars within price range (${minPrice}, ${maxPrice})`, arrayOfCars);
+        } else {
+            console.log(`No cars available within given range`);
+        }
+
+        return arrayOfCars;
+    }
+}
+getCarsWithinRange(0, 10000);
+
+/*TO IMPLEMENT LATER
+get cars based on brand
+*/
+
+//returns most expensive car available
+function getMostExpensiveCar(){
+    const mostExpensiveCar = getAllAvailableCars().reduce((acc, currentValue) => {
+        if(acc.price > currentValue.price){
+            return acc;
+        } else {
+            return currentValue;
+        }
+    }, 0);
+
+    console.log(`The most expensive car available costs $${mostExpensiveCar.price}`, mostExpensiveCar);
+    return mostExpensiveCar;
+}
+getMostExpensiveCar();
+
+// returns cheapest car available
+function getCheapestCar(){
+    const cheapestCar = getAllAvailableCars().reduce((acc, currentValue) => {
+        if(acc.price < currentValue.price){
+            return acc;
+        } else {
+            return currentValue;
+        }
+    }, 0);
+
+    console.log(`The cheapest available car costs $${cheapestCar.price}`, cheapestCar);
+    return cheapestCar;
+}
+getCheapestCar();
