@@ -812,4 +812,28 @@ function updateCarPrice(agencyId, carNumber, newPrice){
     }
 }
 
+function getTotalMarketRevenue(agencyId){
+    const agency = getAgencyByID(agencyId);
 
+    if(agency){
+
+        let totalRevenue = 0;
+
+        //loops over each car inside agency.cars
+        for (const car of agency.cars) {
+            //loops over model inside car.models array
+            for(const model of car.models){
+                totalRevenue += model.price;
+            }
+        }
+
+        console.log(`Total Revenue for Agency#${agencyId} = ${totalRevenue}`)
+        return totalRevenue;
+
+    } else {
+        console.log(`Error: the provided agency id (${agencyId}) does not exist in the database`);
+        return undefined;
+    }
+}
+
+getTotalMarketRevenue("Plyq5M5AZ");
