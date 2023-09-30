@@ -701,19 +701,6 @@ addNewCarToAgency("Plyq5M5AZ", "Rolls-Royce", "Phantom", 2022, 457750, "837SG");
 addNewCarToAgency("Plyq5M5AZ", "Tesla", "Model S", 2023, 71090, "MU5K23");
 addNewCarToAgency("Plyq5M5AZ", "bM2w");
 
-//returns car object using car num
-// function getCarByNumber(carNumber){
-//     carNumber = carNumber.toString();
-     
-//     return carMarket.sellers.find( seller => {
-//         return seller.cars.find(car => {
-//             return car.models.find(model => {
-//                 return model.carNumber === carNumber
-//             })
-//         })
-//     })
-// }
-
 
 //Removes car from agency if car exists
 function removeCarFromAgency(agencyId, carNumber){
@@ -812,6 +799,7 @@ function updateCarPrice(agencyId, carNumber, newPrice){
     }
 }
 
+// calculates the total market revenue of the agency (sum of all car prices)
 function getTotalMarketRevenue(agencyId){
     const agency = getAgencyByID(agencyId);
 
@@ -823,6 +811,7 @@ function getTotalMarketRevenue(agencyId){
         for (const car of agency.cars) {
             //loops over model inside car.models array
             for(const model of car.models){
+                //adds the model's price to the total revenue
                 totalRevenue += model.price;
             }
         }
@@ -838,6 +827,7 @@ function getTotalMarketRevenue(agencyId){
 
 getTotalMarketRevenue("Plyq5M5AZ");
 
+// transfers a car from one agency to another 
 function transferCarBetweenAgencies(oldAgencyId, newAgencyId, carNumber){
     const oldAgency = getAgencyByID(oldAgencyId);
     const newAgency = getAgencyByID(newAgencyId);
@@ -870,3 +860,92 @@ function transferCarBetweenAgencies(oldAgencyId, newAgencyId, carNumber){
 }
 transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1","MU5K23");
 transferCarBetweenAgencies("Plyq5M5AZ", "26_IPfHU1","MU5K2");
+
+//*** CUSTOMER OPPERATIONS***//
+
+//returns customer as an object, takes customer name as an argument
+function getCustomerByName(customerName){
+    const customerObj = carMarket.customers.find(customer => {
+        return customer.name === customerName;
+    });
+
+    if(customerObj){
+        console.log(`Successfully found customer using name ${customerName}`, customerObj);
+    } else {
+        console.log(`Failed to find customer named ${customerName}`);
+    }
+
+    return customerObj;
+}
+getCustomerByName("Bob Steel");
+getCustomerByName("Simon Asmar");
+
+//returns customer using customerID
+function getCustomerByID(customerId){
+    const customerObj = carMarket.customers.find(customer => {
+        return customer.id === customerId;
+    });
+
+    if(customerObj){
+        console.log(`Successfully found customer using id ${customerId}`, customerObj);
+    } else {
+        console.log(`Failed to find customer with id ${customerId}`);
+    }
+
+    return customerObj;
+}
+getCustomerByID("Wm6BkA1F0");
+getCustomerByID("Wm6BkA1");
+
+//returns all customer names
+function getAllCustomerNames(){
+    const customerNames = carMarket.customers.map(customer => {
+        return customer.name;
+    })
+
+    console.log("Customer Names", customerNames);
+
+    return customerNames;
+}
+getAllCustomerNames();
+
+//changes the amount of cash a customer has
+function updateCustomerCash(customerId, newCashAmount){
+    const customer = getCustomerByID(customerId);
+
+    newCashAmount = parseFloat(newCashAmount);
+
+    if(customer && (!isNaN(newCashAmount))){
+
+        customer.cash = newCashAmount;
+
+        console.log(`Successfully updated cash abount for customer`, customer);
+
+    } else {
+        console.log(`Failed to update customer cash`);
+    }
+}
+updateCustomerCash("2RprZ1dbL", 27000);
+
+//calculates totaal value of all cars owned by customer
+function getCustomerTotalCarValue(customerId){
+    const customer = getCustomerByID(customerId);
+
+    if(customer){
+        
+        const initialValue = 0;
+        let totalCarValue = customer.cars.reduce((acc, currentValue) => {
+            return acc + currentValue.price;
+        }, initialValue);
+
+        console.log(`${customer.name}\'s total car value = $${totalCarValue}`)        
+
+        return totalCarValue;
+    } else {
+        console.log(`Failed to get total car value`);
+    }
+
+}
+getCustomerTotalCarValue("2RprZ1dbL");
+getCustomerTotalCarValue("Wm6BkA1F0");
+
